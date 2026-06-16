@@ -1,0 +1,117 @@
+{
+  "policy_name": "SecureHealth GCC Group Medical Plan - Plan B",
+  "document_ref": "GF-SH-B/2025",
+  "inception_date": "2025-01-01",
+  "annual_aggregate_limit": 250000,
+  "benefits": {
+    "Outpatient Consultation": {
+      "benefit": "Outpatient Consultation",
+      "sub_limit": 8000,
+      "deductible_applies": true,
+      "in_network": {
+        "covered": true,
+        "deductible": 50,
+        "coinsurance_pct": 10
+      },
+      "out_of_network": {
+        "covered": true,
+        "deductible": 50,
+        "coinsurance_pct": 30
+      }
+    },
+    "Diagnostics": {
+      "benefit": "Diagnostics",
+      "sub_limit": 10000,
+      "deductible_applies": false,
+      "in_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 10
+      },
+      "out_of_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 30
+      }
+    },
+    "Prescribed Medication": {
+      "benefit": "Prescribed Medication",
+      "sub_limit": 6000,
+      "deductible_applies": false,
+      "in_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 20
+      },
+      "out_of_network": {
+        "covered": false,
+        "deductible": 0,
+        "coinsurance_pct": 0
+      }
+    },
+    "Physiotherapy": {
+      "benefit": "Physiotherapy",
+      "sub_limit": 2500,
+      "deductible_applies": false,
+      "in_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 20
+      },
+      "out_of_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 30
+      }
+    },
+    "Inpatient & Surgery": {
+      "benefit": "Inpatient & Surgery",
+      "sub_limit": null,
+      "deductible_applies": false,
+      "in_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 0
+      },
+      "out_of_network": {
+        "covered": true,
+        "deductible": 0,
+        "coinsurance_pct": 20
+      }
+    }
+  },
+  "endorsements": [
+    {
+      "endorsement_id": "E1",
+      "benefit": "Physiotherapy",
+      "description": "Physiotherapy Enhancement: reduces in-network coinsurance to 10% and raises the annual sub-limit to AED 4,000. Effective from the Inception Date. Prevails over Section 2 Table of Benefits.",
+      "overrides": {
+        "sub_limit": 4000,
+        "in_network": {
+          "coinsurance_pct": 10
+        }
+      }
+    }
+  ],
+  "exclusions": {
+    "chronic_waiting_period_months": 6,
+    "general_exclusions": [
+      "cosmetic treatment",
+      "self-inflicted injury",
+      "experimental or unproven treatment",
+      "treatment outside the Policy Year",
+      "charges above Reasonable & Customary"
+    ]
+  },
+  "pre_auth_rules": {
+    "benefits_requiring_preauth": ["Inpatient & Surgery"],
+    "elective_only": true,
+    "penalty_pct_if_missing": 20
+  },
+  "calculation_order": [
+    "cap_at_eligible_amount",
+    "subtract_deductible",
+    "apply_member_coinsurance",
+    "insurer_pays_remainder"
+  ]
+}
