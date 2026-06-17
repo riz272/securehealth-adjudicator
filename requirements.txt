@@ -1,0 +1,7 @@
+pdfplumber
+pydantic>=2.0
+openai
+tabulate
+python-dotenv
+python-dateutil
+pytest
