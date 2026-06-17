@@ -1,6 +1,9 @@
 # SecureHealth Claim Adjudicator
 
-Adjudicates health-insurance claims against a policy wording. Takes a policy config and a list of claims, and returns per-claim settlements with a full audit trail.
+Automated adjudication of health-insurance claims against the SecureHealth Plan B
+policy wording. Given a policy document and a set of claims, the system decides,
+per claim, what the insurer pays and what the member owes, with a fully auditable
+derivation for every figure.
 
 ## Setup
 
@@ -39,15 +42,27 @@ ollama pull qwen2.5:7b-instruct
 python src/main.py --policy-pdf 02_SecureHealth_Policy_Wording.pdf --claims-pdf 03_Claim_Scenario_Main.pdf
 ```
 
-I couldn't use this path for the submission - on the dev machine (16GB RAM, CPU-only, ~2-4GB free) the models that fit in memory didn't extract reliably:
+This is left out of the primary path above because, on the development
+machine used for this submission (16GB RAM, CPU-only, ~2-4GB free), no model
+both fit in memory *and* extracted the documents correctly:
 
-| Model | Size | Runs? | Extracts correctly? |
+| Model | Size | Runs without freezing? | Extracts correctly? |
 |---|---|---|---|
 | `qwen2.5:7b-instruct` | 4.7GB | No (needs ~6GB+ free RAM) | Yes, when it ran |
 | `qwen2.5:3b-instruct` | 1.9GB | Yes | No - dropped benefit entries, conflated sub-limit/deductible values |
 | `qwen2.5-coder:1.5b-instruct` | 986MB | Yes | No - produced invalid JSON |
 
-In each failure case Pydantic caught it immediately - a `ValidationError`, `KeyError`, or `JSONDecodeError` rather than a wrong number making it into a settlement. The model and endpoint are configurable via env vars (see `.env.example`), so pointing at a hosted provider or a beefier local machine requires no code changes.
+In every failure case, the Pydantic validation layer caught the bad output
+immediately: a `ValidationError` on out-of-range/missing fields, a `KeyError`
+when the adjudicator looked up a benefit that extraction had silently renamed,
+or a `JSONDecodeError` on malformed output, rather than letting a wrong
+number reach a settlement. None of these produced an incorrect answer
+silently, which is the property the brief asks for ("if you use an LLM, we
+care how you constrain and verify it"). On a machine with more headroom,
+`qwen2.5:7b-instruct` is expected to extract both documents correctly and is
+the recommended starting point. Swap models via the `LLM_MODEL` env var (see
+`.env.example`) with no code changes, or point `LLM_BASE_URL`/`OPENAI_API_KEY`
+at a hosted provider instead.
 
 ## Why RAG doesn't work here
 
