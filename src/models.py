@@ -1,10 +1,4 @@
-"""Pydantic data models for claims, policy rules, and settlements.
-
-These models are the contract between extraction (LLM-driven, untrusted)
-and adjudication (deterministic, pure calculation). Anything that crosses
-from raw PDF text into the calculation engine must pass through one of
-these models first.
-"""
+"""Pydantic models for claims, policy rules, and settlements."""
 from __future__ import annotations
 
 from datetime import date
@@ -32,11 +26,6 @@ class PreAuthStatus(str, Enum):
     NA = "n/a"
 
 
-# ---------------------------------------------------------------------------
-# Claim input
-# ---------------------------------------------------------------------------
-
-
 class Claim(BaseModel):
     claim_id: str
     service_date: date
@@ -60,17 +49,21 @@ class Claim(BaseModel):
         return self
 
 
-# ---------------------------------------------------------------------------
-# Policy rule structures
-# ---------------------------------------------------------------------------
-
-
 class NetworkTerms(BaseModel):
     """Member cost-sharing terms for one network status (in- or out-of-network)."""
 
     covered: bool = True
     deductible: float = 0.0
-    coinsurance_pct: float = Field(..., ge=0, le=100)
+    coinsurance_pct: float = Field(default=0.0, ge=0, le=100)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _none_to_zero(cls, data):
+        if isinstance(data, dict):
+            for field in ("deductible", "coinsurance_pct"):
+                if data.get(field) is None:
+                    data[field] = 0.0
+        return data
 
 
 class BenefitRule(BaseModel):
@@ -136,10 +129,7 @@ class PolicyConfig(BaseModel):
     )
 
     def resolved_benefit(self, benefit_name: str) -> BenefitRule:
-        """Return the BenefitRule for `benefit_name` with all applicable
-        endorsements merged in. Endorsements always prevail over the base
-        table per policy Section 5 / document preamble.
-        """
+        """Endorsements prevail over the base table (Section 5)."""
         base = self.benefits[benefit_name]
         merged = base.model_copy(deep=True)
         for endt in self.endorsements:
@@ -153,11 +143,6 @@ class PolicyConfig(BaseModel):
                 else:
                     setattr(merged, field_name, value)
         return merged
-
-
-# ---------------------------------------------------------------------------
-# Settlement output
-# ---------------------------------------------------------------------------
 
 
 class Settlement(BaseModel):
